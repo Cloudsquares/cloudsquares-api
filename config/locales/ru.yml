@@ -1,18 +1,40 @@
 ru:
+  activerecord:
+    models:
+      property: "Объект недвижимости"
+
+    attributes:
+      property:
+        title: "Название"
+        description: "Описание"
+        price: "Цена"
+        discount: "Скидка"
+        listing_type: "Тип объявления"
+        status: "Статус"
+        is_active: "Активен"
+        category: "Категория"
+        category_id: "Категория"
+        agent: "Агент"
+        agent_id: "Агент"
+        agency: "Агентство"
+        agency_id: "Агентство"
+
+    errors:
+      models:
+        property:
+          attributes:
+            category:
+              required: "должна быть выбрана"
+            category_id:
+              blank: "должна быть выбрана"
+            price:
+              not_a_number: "должна быть числом"
+              greater_than_or_equal_to: "должна быть больше или равна %{count}"
+
   errors:
     messages:
       taken: "уже используется"
-
-  activerecord:
-    errors:
-      models:
-        user:
-          attributes:
-            phone:
-              taken: "Этот номер телефона уже используется"
-            email:
-              taken: "Этот email уже зарегистрирован"
-        contact:
-          attributes:
-            first_name:
-              blank: "Имя не может быть пустым"
+      blank: "обязательное поле не заполнено"
+      required: "обязательное поле не заполнено"
+      not_a_number: "должно быть числом"
+      greater_than_or_equal_to: "должно быть больше или равно %{count}"

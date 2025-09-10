@@ -16,10 +16,15 @@
 #  category_id  :uuid             not null
 #  agent_id     :uuid             not null
 #  agency_id    :uuid             not null
+#  slug         :string           not null            # ← добавили
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #
 class Property < ApplicationRecord
+  # Автогенерация slug из title с учётом agency_id (уникальность в рамках агентства)
+  include Shared::HasFriendlySlug
+  has_friendly_slug source: :title, scope: :agency_id
+
   # Associations
   belongs_to :agency
   belongs_to :agent, class_name: "User"
@@ -50,10 +55,13 @@ class Property < ApplicationRecord
   # Ограничим размер описания, чтобы не хранить мегабайты HTML
   validates :description, length: { maximum: 50_000 }, allow_nil: true
 
-  # Базовые проверки (минимально необходимые поля и числовые ограничения).
-  # Детальные и кросс-проверки вынесены в отдельный валидатор.
-  validates :title, :price, :listing_type, :status, :agency_id, :category_id, :agent_id, presence: true
+  # Базовые проверки
+  validates :title, :price, :listing_type, :status, presence: true
   validates :discount, :price, numericality: { greater_than_or_equal_to: 0 }
+
+  # Slug обязателен и уникален в рамках агентства (регистр не важен)
+  validates :slug, presence: true,
+            uniqueness: { scope: :agency_id, case_sensitive: false }
 
   # Дополнительные бизнес-проверки и логика шагов создания/активации.
   validates_with PropertyBaseValidator

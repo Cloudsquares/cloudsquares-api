@@ -161,6 +161,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
 
   create_table "properties", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "title", null: false
+    t.string "slug", null: false
     t.text "description"
     t.decimal "price", precision: 12, scale: 2, null: false
     t.decimal "discount", default: "0.0"
@@ -173,6 +174,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
     t.uuid "agency_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["agency_id", "slug"], name: "index_properties_on_agency_id_and_slug", unique: true
     t.index ["agency_id"], name: "index_properties_on_agency_id"
     t.index ["agent_id"], name: "index_properties_on_agent_id"
     t.index ["category_id"], name: "index_properties_on_category_id"

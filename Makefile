@@ -81,7 +81,7 @@ db-seed:
 
 ## 💣 Полный сброс базы данных и повторный запуск миграций + seed
 db-reset:
-	docker compose --env-file $(ENV_FILE_DEV) exec web bin/rails db:reset
+	docker compose --env-file $(ENV_FILE_DEV) exec web bin/rails db:migrate:reset
 
 
 ## 🧬 Проверить статус миграций (db:migrate:status)

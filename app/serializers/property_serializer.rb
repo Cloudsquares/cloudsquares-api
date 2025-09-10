@@ -4,7 +4,7 @@
 class PropertySerializer < ActiveModel::Serializer
   attributes :id, :title, :description,
              :listing_type, :status, :created_at, :updated_at, :is_active,
-             :characteristics
+             :characteristics, :slug
 
   attribute :price do
     object.price.round(2).to_f

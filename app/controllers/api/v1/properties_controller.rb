@@ -28,7 +28,6 @@ module Api
 
 
       def show
-        @property = Property.includes(:property_location, agent: :person).find(params[:id])
         authorize @property
 
         # TODO: надо подумать, будем ли отдавать на просмотр удаленные объекты(отображать как "объявление в архиве") и другие статусы, кроме active ?
@@ -111,7 +110,10 @@ module Api
       end
 
       def set_property
-        @property = Property.find(params[:id])
+        base = Current.agency ? Current.agency.properties : Property
+        @property = base
+                      .includes(:property_location, agent: :person)
+                      .friendly.find(params[:id])  # принимает и slug, и UUID
       end
 
       def property_params
