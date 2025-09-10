@@ -1,4 +1,3 @@
-# app/policies/property_category_characteristic_policy.rb
 # frozen_string_literal: true
 
 class PropertyCategoryCharacteristicPolicy < ApplicationPolicy

@@ -1,4 +1,3 @@
-# app/policies/user_policy.rb
 # frozen_string_literal: true
 
 # Политика доступа для модели User.

@@ -1,4 +1,3 @@
-# app/models/user_profile.rb
 # frozen_string_literal: true
 
 class UserProfile < ApplicationRecord

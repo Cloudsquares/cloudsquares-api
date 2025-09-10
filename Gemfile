@@ -37,6 +37,8 @@ gem "image_processing", "~> 1.14"
 gem "annotate", "~> 2.6"
 gem "discard", "~> 1.4"
 gem "uuidtools", "~> 3.0"
+gem "friendly_id", "~> 5.1"
+gem "babosa", "~> 2.0"
 
 # 🚀 Production tools (optional)
 gem "kamal", require: false

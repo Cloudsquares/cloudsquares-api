@@ -1,4 +1,3 @@
-# app/serializers/agent_compact_serializer.rb
 # frozen_string_literal: true
 
 # TODO: вытаскивание ФИО из контактов повторяется в сериалзиторах, надо вынести в одно место и переиспользовать.

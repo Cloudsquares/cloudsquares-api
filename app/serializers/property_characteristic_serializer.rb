@@ -1,4 +1,3 @@
-# app/serializers/property_characteristic_serializer.rb
 # frozen_string_literal: true
 
 # Сериализатор для характеристики недвижимости

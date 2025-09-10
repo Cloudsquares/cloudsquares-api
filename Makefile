@@ -104,6 +104,14 @@ controller:
 routes:
 	docker compose --env-file $(ENV_FILE_DEV) exec web bin/rails routes
 
+## Проверка установки гема
+check-gem:
+	@if [ -z "$(GEM)" ]; then \
+	  echo "❌ Пожалуйста, укажи NAME (например, NAME=friendly_id)"; \
+	else \
+	  docker compose --env-file $(ENV_FILE_DEV) exec web bundle show $(GEM); \
+	fi
+
 
 
 # ========================

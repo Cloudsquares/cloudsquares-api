@@ -1,4 +1,4 @@
-# app/serializers/agency_serializer.rb
+# frozen_string_literal: true
 class AgencySerializer < ActiveModel::Serializer
   attributes :id, :title, :slug, :custom_domain, :is_blocked, :blocked_at,
              :is_active, :deleted_at, :created_at, :updated_at

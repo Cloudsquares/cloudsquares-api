@@ -91,7 +91,7 @@ module Api
       end
 
       def category_params
-        params.require(:property_category).permit(:title, :slug, :position, :parent_id, :is_active)
+        params.require(:property_category).permit(:title, :position, :parent_id, :is_active)
       end
     end
   end
