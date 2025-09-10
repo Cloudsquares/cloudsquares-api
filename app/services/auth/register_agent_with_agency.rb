@@ -9,11 +9,13 @@
 # 3) Определяем тарифный план для агентства:
 #    - Если передан agency_plan_id — берём его (ActiveRecord::RecordNotFound если не существует/неактивен).
 #    - Иначе ищем активный план по умолчанию (is_default && is_active).
-# 4) Генерируем slug для агентства (если не передан) по title (транслитерация + parameterize).
-#    - Если сгенерированный slug уже занят, добавляем -1, -2, ...
-# 5) Создаём Agency (created_by: user, agency_plan: plan).
-# 6) Привязываем пользователя к агентству через UserAgency (is_default: true, status: :active).
-# 7) Создаём Contact в рамках этого агентства для person с переданными ФИО/e-mail.
+# 4) Создаём Agency:
+#    - Если slug передан в agency_params — он будет НОРМАЛИЗОВАН через Shared::SlugNormalizer
+#      и оставлен как есть (при коллизии — валидационная ошибка уникальности).
+#    - Если slug не передан — FriendlyId сгенерирует его из title (Babosa + fallback).
+#      При коллизии FriendlyId добавит суффикс (-2, -3, ...).
+# 5) Привязываем пользователя к агентству через UserAgency (is_default: true, status: :active).
+# 6) Создаём Contact в рамках этого агентства для person с переданными ФИО/e-mail.
 #
 # Возвращает [user, agency].
 #
@@ -130,18 +132,26 @@ module Auth
       end
     end
 
-    # Создаёт Agency с уникальным slug (если не передан в params).
+    # Создаёт Agency c корректным slug.
+    #
+    # Правила:
+    # - Если в agency_params[:slug] что-то передали — нормализуем через Shared::SlugNormalizer
+    #   и кладём в модель как «ручной» slug (его не перезапишет FriendlyId, см. Agency#should_generate_new_friendly_id?).
+    # - Если slug не передан — FriendlyId сгенерирует из title (Babosa → Latin → cleanup),
+    #   а при коллизии добавит суффикс (-2, -3, ...).
     #
     # @param user [User]
     # @param plan [AgencyPlan]
     # @return [Agency]
     def create_agency!(user:, plan:)
       title = agency_params[:title].to_s
-      slug  = agency_params[:slug].presence || unique_slug_for(title)
+
+      manual_slug = agency_params[:slug].presence
+      manual_slug = Shared::SlugNormalizer.normalize(manual_slug, fallback: "agency") if manual_slug
 
       agency = Agency.new(
         title:         title,
-        slug:          slug,
+        slug:          manual_slug,               # nil => FriendlyId сгенерирует из title
         custom_domain: agency_params[:custom_domain],
         created_by:    user,
         agency_plan:   plan
@@ -178,24 +188,6 @@ module Auth
         c.email        = user_email
         c.extra_phones = []
       end
-    end
-
-    # Генерирует уникальный slug на основе title (транслитерация + parameterize).
-    # Если занято — добавляет -1, -2, ... пока не найдёт свободный.
-    #
-    # @param title [String]
-    # @return [String]
-    def unique_slug_for(title)
-      base = ActiveSupport::Inflector.transliterate(title.to_s).parameterize
-      base = "agency" if base.blank?
-
-      candidate = base
-      suffix = 0
-      while Agency.exists?(slug: candidate)
-        suffix += 1
-        candidate = "#{base}-#{suffix}"
-      end
-      candidate
     end
   end
 end
