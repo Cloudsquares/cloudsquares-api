@@ -7,7 +7,6 @@
   категорию ошибок: validation, auth, business, server
 =end
 
-
 module ApiErrorHandling
   extend ActiveSupport::Concern
 
@@ -21,7 +20,7 @@ module ApiErrorHandling
     # чтобы вернуть корректный JSON с подробностями.
     rescue_from ActiveRecord::RecordInvalid, with: :render_record_invalid
 
-    # Базовая обработка ошибок 500+ todo: надо протестить
+    # Базовая обработка неожиданных ошибок 500+
     rescue_from StandardError do |exception|
       logger.error "[#{exception.class}] #{exception.message}"
       logger.error exception.backtrace.join("\n") if Rails.env.development? || Rails.env.test?
@@ -37,7 +36,6 @@ module ApiErrorHandling
 
   private
 
-
   # Унифицированный рендер ошибок валидации для поднятых исключений
   #
   # @param exception [ActiveRecord::RecordInvalid]
@@ -50,12 +48,15 @@ module ApiErrorHandling
         message: "Ошибка валидации",
         code: 422,
         status: :unprocessable_entity,
-        details: extract_full_errors(resource)
+        details: extract_errors(resource, full: false)
       }
     }, status: :unprocessable_entity
   end
 
-  # Обработка уникальности на уровне базы (например, индекс tax_id)
+  # Обработка уникальности на уровне базы (например, индекс)
+  #
+  # @param exception [ActiveRecord::RecordNotUnique, nil]
+  # @return [void]
   def render_record_not_unique(exception = nil)
     constraint = extract_constraint_from_exception(exception)
     message = friendly_message_for_constraint(constraint)
@@ -68,8 +69,10 @@ module ApiErrorHandling
     )
   end
 
-
-  # Парсим constraint из текста PG ошибки
+  # Парсим имя constraint из текста ошибки PostgreSQL
+  #
+  # @param exception [Exception, nil]
+  # @return [String, nil]
   def extract_constraint_from_exception(exception)
     return nil unless exception&.message
 
@@ -77,7 +80,10 @@ module ApiErrorHandling
     match[:name] if match
   end
 
-  # Возвращаем пользовательское сообщение по имени constraint'а
+  # Дружелюбные сообщения под известные ограничения
+  #
+  # @param constraint [String, nil]
+  # @return [String, nil]
   def friendly_message_for_constraint(constraint)
     case constraint
     when "index_legal_profiles_on_tax_id"
@@ -91,9 +97,7 @@ module ApiErrorHandling
     end
   end
 
-
-
-  # Обработка ошибки Pundit::NotAuthorizedError
+  # 401 — пользователь не авторизован
   def render_unauthorized(message = "Необходимо войти в аккаунт", key = "auth.unauthorized")
     render_error(key: key, message: message, status: :unauthorized, code: 401)
   end
@@ -123,6 +127,7 @@ module ApiErrorHandling
     )
   end
 
+  # Pundit: 403 — доступ запрещён
   def render_pundit_forbidden(exception)
     query_name = exception.query.to_s
     record_class = exception.record.is_a?(Class) ? exception.record : exception.record.class
@@ -141,15 +146,16 @@ module ApiErrorHandling
 
     # Карта моделей → человекочитаемые ресурсы
     record_map = {
-      "legal_profile" => "юридическим профилям",
-      "seller_profile" => "профилю продавца",
-      "shop" => "магазину",
-      "user" => "пользователю",
-      "product" => "товару",
-      "order" => "заказу"
+      "legal_profile"    => "юридическим профилям",
+      "seller_profile"   => "профилю продавца",
+      "shop"             => "магазину",
+      "user"             => "пользователю",
+      "product"          => "товару",
+      "order"            => "заказу",
+      "property_owner"   => "владельца объекта"
     }
 
-    action_text = query_map.fetch(query_name, "действию")
+    action_text   = query_map.fetch(query_name, "действию")
     resource_text = record_map.fetch(record_name, "ресурса")
 
     message = "Нет прав на #{action_text} #{resource_text}"
@@ -175,6 +181,12 @@ module ApiErrorHandling
   end
 
   # Универсальная точка возврата ошибок
+  #
+  # @param key [String]
+  # @param message [String]
+  # @param status [Symbol, Integer]
+  # @param code [Integer]
+  # @return [void]
   def render_error(key:, message:, status:, code:)
     render json: {
       error: {
@@ -187,6 +199,11 @@ module ApiErrorHandling
   end
 
   # Универсальный успех
+  #
+  # @param key [String]
+  # @param message [String]
+  # @param code [Integer]
+  # @return [void]
   def render_success(key:, message:, code: 200)
     render json: {
       success: {
@@ -198,7 +215,10 @@ module ApiErrorHandling
     }, status: :ok
   end
 
-  # Ошибки валидации ActiveModel/ActiveRecord
+  # Рендер ошибок валидации ActiveModel/ActiveRecord
+  #
+  # @param resource [ActiveRecord::Base]
+  # @return [void]
   def render_validation_errors(resource)
     render json: {
       error: {
@@ -206,7 +226,8 @@ module ApiErrorHandling
         message: "Ошибка валидации",
         code: 422,
         status: :unprocessable_entity,
-        details: extract_full_errors(resource)
+        # ВАЖНО: без префикса названия атрибута
+        details: extract_errors(resource, full: false)
       }
     }, status: :unprocessable_entity
   end
@@ -214,10 +235,11 @@ module ApiErrorHandling
   # Глубокий сбор ошибок: собственные + has_one/has_many (включая nested_attributes)
   #
   # @param resource [ActiveRecord::Base]
-  # @return [Hash] хэш с сообщениями, включая дочерние записи
-  def extract_full_errors(resource)
+  # @param full [Boolean] использовать ли "full messages" (c префиксом атрибута)
+  # @return [Hash] хэш вида { field_name => [messages...] }, без префикса при full: false
+  def extract_errors(resource, full: false)
     # Собственные ошибки ресурса
-    all = resource.errors.to_hash(true)
+    all = full ? resource.errors.to_hash(true) : resource.errors.to_hash(false)
 
     # Пробегаемся по ассоциациям и добавляем их ошибки в details.
     resource.class.reflect_on_all_associations.each do |assoc|
@@ -229,17 +251,17 @@ module ApiErrorHandling
       if associated.is_a?(Enumerable)
         associated.each_with_index do |rec, idx|
           next if rec.errors.empty?
-          all["#{assoc.name}[#{idx}]"] = rec.errors.to_hash(true)
+          all["#{assoc.name}[#{idx}]"] = full ? rec.errors.to_hash(true) : rec.errors.to_hash(false)
         end
       else
-        all[assoc.name] = associated.errors.to_hash(true) unless associated.errors.empty?
+        all[assoc.name] = full ? associated.errors.to_hash(true) : associated.errors.to_hash(false) unless associated.errors.empty?
       end
     end
 
     all
   end
 
-  # Безопасно получить ассоциированные записи без выбрасывания ошибок
+  # Безопасно получить ассоциированные записи без выброса ошибок
   #
   # @param resource [ActiveRecord::Base]
   # @param name [Symbol]

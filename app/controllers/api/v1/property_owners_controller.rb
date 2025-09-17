@@ -21,6 +21,8 @@ module Api
       before_action :set_owner,    only: %i[show update destroy]
       after_action :verify_authorized
 
+      ALLOWED_ROLE_KEYS = PropertyOwner.roles.keys.freeze
+
       # GET /api/v1/properties/:property_id/owners
       #
       # Параметры:
@@ -33,22 +35,26 @@ module Api
 
         scope = PropertyOwner
                   .active
-                  .joins(:property)
+                  .joins(:property, contact: :person)
                   .where(properties: { agency_id: Current.agency.id, id: @property.id })
                   .includes(:property, contact: :person)
 
-        order = safe_sort(
-          allowed: {
-            "created_at" => "property_owners.created_at",
-            "role"       => "property_owners.role",
-            # сортировка по телефону теперь через people.normalized_phone
-            "phone"      => "people.normalized_phone"
-          },
-          default: { "property_owners.created_at" => :desc },
-          nulls_last: false
-        )
+        if params[:sort_by].present?
+          order = safe_sort(
+            allowed: {
+              "created_at" => "property_owners.created_at",
+              "role"       => "property_owners.role",
+              "phone"      => "people.normalized_phone"
+            },
+            default: { "property_owners.created_at" => :desc },
+            nulls_last: false
+          )
+          scope = scope.order(order)
+        else
+          scope = scope.order(Arel.sql(role_priority_sql)).order("property_owners.created_at DESC")
+        end
 
-        render_paginated(scope.joins(contact: :person), serializer: PropertyOwnerSerializer, order:)
+        render_paginated(scope, serializer: PropertyOwnerSerializer)
       end
 
       # GET /api/v1/properties/:property_id/owners/:id
@@ -73,6 +79,8 @@ module Api
       #   }
       # }
       def create
+        # ВАЖНО: авторизация должна вызываться до любых ранних return,
+        # чтобы after_action :verify_authorized не падал.
         authorize PropertyOwner
 
         if @property.property_owners.active.count >= 5
@@ -106,6 +114,19 @@ module Api
           )
         end
 
+        # Роль — только строковый ключ из enum. Если поле не передано — берём дефолт :primary
+        if cp.key?(:role)
+          unless cp[:role].is_a?(String) && ALLOWED_ROLE_KEYS.include?(cp[:role])
+            return render_error(
+              key: "property_owners.role_invalid",
+              message: "Некорректная роль владельца. Допустимые значения: #{ALLOWED_ROLE_KEYS.join(', ')}",
+              status: :unprocessable_entity,
+              code: 422
+            )
+          end
+        end
+        role_key = cp[:role].presence || "primary"
+
         ActiveRecord::Base.transaction do
           # 1) Person по телефону
           person = Person.find_or_create_by!(normalized_phone: normalized)
@@ -121,12 +142,13 @@ module Api
           # 3) PropertyOwner
           owner = @property.property_owners.build(
             contact_id: contact.id,
+            role:       role_key,
             user_id:    cp[:user_id],
-            role:       cp[:role] || "primary",
             notes:      cp[:notes],
             is_deleted: false
           )
 
+          # Доп. авторизация по конкретной записи (можно оставить — тонкий контроль)
           authorize owner
 
           if owner.save
@@ -186,7 +208,17 @@ module Api
 
           # Обновление полей самого PropertyOwner
           po_updatable = {}
-          po_updatable[:role]    = cp[:role]    if cp.key?(:role)
+          if cp.key?(:role)
+            unless cp[:role].is_a?(String) && ALLOWED_ROLE_KEYS.include?(cp[:role])
+              return render_error(
+                key: "property_owners.role_invalid",
+                message: "Некорректная роль владельца. Допустимые значения: #{ALLOWED_ROLE_KEYS.join(', ')}",
+                status: :unprocessable_entity,
+                code: 422
+              )
+            end
+            po_updatable[:role] = cp[:role]
+          end
           po_updatable[:notes]   = cp[:notes]   if cp.key?(:notes)
           po_updatable[:user_id] = cp[:user_id] if cp.key?(:user_id)
 
@@ -243,6 +275,18 @@ module Api
       end
 
       private
+
+      # Сортировка при выдаче всех собственников
+      # Порядок: primary → relative → partner → other
+      # Используем значения enum из БД, чтобы не «хардкодить» числа.
+      def role_priority_sql
+        r = PropertyOwner.roles
+        order = [r["primary"], r["relative"], r["partner"], r["other"]]
+        ActiveRecord::Base.send(
+          :sanitize_sql_array,
+          ["array_position(ARRAY[?]::int[], property_owners.role)", order]
+        )
+      end
 
       # Поиск объекта недвижимости по :property_id
       def set_property

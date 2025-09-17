@@ -15,7 +15,7 @@ class PropertyOwnerSerializer < ActiveModel::Serializer
              :phone,
              :email,
              :notes,
-             :role,
+             :role, # TODO: Сейчас при создании в параметрах отправляем число, а в ответе возвращаем строку - нужно привести к одному виду
              :is_deleted,
              :deleted_at,
              :created_at,

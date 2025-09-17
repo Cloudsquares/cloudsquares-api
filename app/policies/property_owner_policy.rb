@@ -1,81 +1,52 @@
-# # frozen_string_literal: true
-#
-# # Политика доступа к PropertyOwner — владельцам недвижимости
-# class PropertyOwnerPolicy < ApplicationPolicy
-#   def index?
-#     return true if admin? || admin_manager?
-#
-#     # Запрос на список комментариев — проверяем доступ к property через Current.agency
-#     Current.agency.present? && manage?
-#   end
-#
-#   def show?
-#     manage_own_agency? && same_agency?
-#   end
-#
-#   def create?
-#     manage_own_agency?
-#   end
-#
-#   def update?
-#     manage_own_agency? && same_agency?
-#   end
-#
-#   def destroy?
-#     manage_own_agency? && same_agency?
-#   end
-#
-#   private
-#
-#   def same_agency?
-#     return false unless record.respond_to?(:property)
-#     Current.agency && record.property.agency_id == Current.agency.id
-#   end
-# end
-
 # frozen_string_literal: true
 
 # Политика доступа к владельцам недвижимости (PropertyOwner).
 #
 # Правила:
-# - index? — сотрудники видят владельцев в рамках объекта своего агентства; админы — тоже.
+# - index? — сотрудники видят владельцев в рамках ТЕКУЩЕГО агентства.
 # - show?/update?/destroy?/create? — только в рамках того же агентства (по property.agency_id).
+#
+# Поддерживает авторизацию как по классу (authorize PropertyOwner), так и по записи
+# (authorize @owner). Для class-level проверяем только право управления и наличие текущего агентства.
 class PropertyOwnerPolicy < ApplicationPolicy
-  # Список владельцев для конкретного объекта
+  # Список владельцев для конкретного объекта / агентства
   #
   # @return [Boolean]
   def index?
-    platform_admin? || (staff? && Current.agency.present?)
+    manage? && Current.agency.present?
   end
 
   # Просмотр владельца
   #
   # @return [Boolean]
   def show?
-    manage_own_agency? && same_agency?
+    can_manage_same_agency_record?
   end
 
   # Создание владельца
   #
   # @return [Boolean]
   def create?
-    # На create в контроллере record уже построен через @property.property_owners.build,
-    # поэтому record.property установлен — можно проверить same_agency?
-    manage_own_agency? && same_agency?
+    if record.is_a?(Class)
+      # class-level authorize (например, ранние валидации в контроллере)
+      manage? && Current.agency.present?
+    else
+      can_manage_same_agency_record?
+    end
   end
 
   # Обновление владельца
   #
   # @return [Boolean]
   def update?
-    manage_own_agency? && same_agency?
+    can_manage_same_agency_record?
   end
 
   # Мягкое удаление владельца
   #
   # @return [Boolean]
   def destroy?
-    manage_own_agency? && same_agency?
+    can_manage_same_agency_record?
   end
 
   # Scope: владельцы в рамках текущего агентства
@@ -83,7 +54,7 @@ class PropertyOwnerPolicy < ApplicationPolicy
     # @return [ActiveRecord::Relation]
     def resolve
       return scope.none unless Current.agency
-      return scope.joins(:property).where(properties: { agency_id: Current.agency.id }) if platform_admin? || staff?
+      return scope.joins(:property).where(properties: { agency_id: Current.agency.id }) if admin? || admin_manager? || agent_admin? || agent_manager? || agent?
 
       scope.none
     end
@@ -91,11 +62,22 @@ class PropertyOwnerPolicy < ApplicationPolicy
 
   private
 
+  # Общая проверка: право управлять + принадлежность записи текущему агентству
+  #
+  # @return [Boolean]
+  def can_manage_same_agency_record?
+    return false unless manage?
+    same_agency?
+  end
+
   # Совпадает ли агентство объекта владельца с текущим агентством контекста
   #
   # @return [Boolean]
   def same_agency?
-    return false unless record.respond_to?(:property) && record.property
-    Current.agency && record.property.agency_id == Current.agency.id
+    return false unless Current.agency
+    return false unless record.respond_to?(:property)
+
+    property = record.property
+    property && property.agency_id == Current.agency.id
   end
 end

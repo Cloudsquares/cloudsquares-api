@@ -45,6 +45,7 @@ class PropertyOwner < ApplicationRecord
   validates :role,        presence: true
 
   validate :max_owners_limit, on: :create
+  validate :single_primary_per_property, if: -> { role.to_s == "primary" && !is_deleted? }
 
   # Полное имя владельца из Contact
   #
@@ -61,6 +62,15 @@ class PropertyOwner < ApplicationRecord
   end
 
   private
+
+  # Проверка на создание только одного основного владельца
+  def single_primary_per_property
+    scope = property.property_owners.active.primary
+    scope = scope.where.not(id: id) if persisted?
+    if scope.exists?
+      errors.add(:role, "Основной владелец уже назначен для этого объекта")
+    end
+  end
 
   # Бизнес-ограничение: не больше 5 активных владельцев на объект
   #
