@@ -68,7 +68,8 @@ module Api
 
         render json: {
           access_token:  tokens[:access_token],
-          refresh_token: tokens[:refresh_token]
+          refresh_token: tokens[:refresh_token],
+          expires_in: tokens[:iat]
         }, status: :ok
       end
 
