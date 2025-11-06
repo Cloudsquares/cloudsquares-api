@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1
 # Используем Ruby образ. Версия задается через аргумент
 ARG RUBY_VERSION=3.4.2
-ARG TARGET_PLATFORM
-FROM --platform=$TARGET_PLATFORM ruby:$RUBY_VERSION-slim AS base
+# ARG TARGET_PLATFORM
+# FROM --platform=$TARGET_PLATFORM ruby:$RUBY_VERSION-slim AS base
+FROM ruby:${RUBY_VERSION}-slim AS base
 
 # Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app

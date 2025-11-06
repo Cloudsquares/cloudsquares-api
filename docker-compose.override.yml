@@ -1,9 +1,10 @@
 services:
   web-test:
+    platform: ${CS_PLATFORM:-${DOCKER_DEFAULT_PLATFORM:-linux/amd64}}
     build:
       context: .
-      args:
-        TARGET_PLATFORM: ${TARGET_PLATFORM:-linux/arm64}
+#      args:
+#        TARGET_PLATFORM: ${TARGET_PLATFORM:-linux/arm64}
     volumes:
       - ./swagger:/app/swagger
     container_name: cloudsquares-api-test
@@ -17,6 +18,7 @@ services:
       - redis
   # 📦 Rails-приложение (API-only backend)
   web:
+    platform: ${CS_PLATFORM:-${DOCKER_DEFAULT_PLATFORM:-linux/amd64}}
     # Очищаем server.pid перед запуском
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails server -b 0.0.0.0 -p 3001"
     # В development окружении монтируем локальную папку внутрь контейнера
@@ -30,16 +32,19 @@ services:
       - "3001:3001"
 
   redis:
+    platform: ${CS_PLATFORM:-${DOCKER_DEFAULT_PLATFORM:-linux/amd64}}
     ports:
       - "6378:6379"
 
   sidekiq:
+    platform: ${CS_PLATFORM:-${DOCKER_DEFAULT_PLATFORM:-linux/amd64}}
     command: bundle exec sidekiq -C config/sidekiq.yml
     volumes:
       - .:/app
     ports: [ ]
 
   db:
+    platform: ${CS_PLATFORM:-${DOCKER_DEFAULT_PLATFORM:-linux/amd64}}
     # Открываем порт PostgreSQL для подключения снаружи (например, через Postico)
     ports:
       - "5431:5432"
