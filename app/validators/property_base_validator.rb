@@ -48,7 +48,7 @@ class PropertyBaseValidator < ActiveModel::Validator
     return if record.price.blank? || record.discount.blank?
 
     if record.discount.to_d > record.price.to_d
-      record.errors.add(:discount, :less_than_or_equal_to, message: "Скидка не может превышать цену")
+      record.errors.add(:discount, :less_than_or_equal_to, message: "Скидка не может превышать стоимость")
     end
   end
 

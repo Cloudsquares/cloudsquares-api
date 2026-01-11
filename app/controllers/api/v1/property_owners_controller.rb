@@ -288,10 +288,13 @@ module Api
         )
       end
 
-      # Поиск объекта недвижимости по :property_id
+      # Поиск объекта недвижимости по :property_id (UUID ИЛИ slug)
       def set_property
-        @property = Property.find(params[:property_id])
+        scope = Current.agency ? Current.agency.properties : Property
+        @property = scope.friendly.find(params[:property_id]) # понимает и slug, и id
       rescue ActiveRecord::RecordNotFound
+        # Чтобы Pundit не ругался на отсутствие authorize при раннем рендере:
+        skip_authorization
         render_not_found("Объект недвижимости не найден", "properties.not_found")
       end
 
