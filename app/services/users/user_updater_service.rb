@@ -27,6 +27,7 @@ module Users
   #   :notification_prefs (Hash), :ui_prefs (Hash)
   #   :email, :role
   #   :password, :password_confirmation, :current_password
+  #   :user_status, :user_status_description
   #
   # Исключения ActiveRecord::RecordInvalid прокидываются наружу,
   # чтобы контроллер мог показать валидируемую модель.
@@ -53,6 +54,7 @@ module Users
         update_profile_fields!
         update_name!
         update_user_account!
+        update_user_status!
 
         @user.profile.save! if @user.profile.changed?
         @user.save! if @user.changed?
@@ -123,7 +125,7 @@ module Users
       case target
       when :profile
         # уже присвоили в update_profile_fields!
-        return
+        nil
       when :contact
         ensure_agency_ctx_for_contact!
         upsert_contact_name!
@@ -171,6 +173,21 @@ module Users
     def name_params_present?
       @params.slice(:first_name, :last_name, :middle_name).values.any?(&:present?) ||
         @params.key?(:first_name) || @params.key?(:last_name) || @params.key?(:middle_name)
+    end
+
+    # ----- Статус пользователя -----
+    def update_user_status!
+      return unless @params.key?(:user_status) || @params.key?(:user_status_description)
+
+      @user.user_status = @params[:user_status] if @params.key?(:user_status)
+      if @params.key?(:user_status_description)
+        @user.user_status_description = @params[:user_status_description]
+      end
+
+      return unless @user.will_save_change_to_user_status?
+
+      @user.status_changed_at = Time.zone.now
+      @user.status_changed_by_id = @current_user&.id
     end
 
     # ----- Учетная запись (User) -----

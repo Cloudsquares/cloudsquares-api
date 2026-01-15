@@ -56,7 +56,7 @@ module Auth
         agency = create_agency!(user: user, plan: plan)
         link_user_to_agency!(user: user, agency: agency)
         create_contact!(agency: agency, person: person, user_email: user.email)
-        [user, agency]
+        [ user, agency ]
       end
     end
 
@@ -101,7 +101,7 @@ module Auth
         password_confirmation: user_params[:password_confirmation],
         role:                  :agent_admin,
         country_code:          user_params[:country_code],
-        is_active:             true
+        user_status:           :active
       )
       user.save!
       user

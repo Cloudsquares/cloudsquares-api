@@ -13,7 +13,7 @@ module Shared
     SUPPORTED_LIMITS = {
       employees: {
         plan_field: :max_employees,
-        counter: ->(agency) { agency.users.where(is_active: true).count }
+        counter: ->(agency) { agency.users.active.count }
       },
       properties: {
         plan_field: :max_properties,

@@ -78,7 +78,14 @@ module Api
 
       # Аутентификация пользователя по access-токену
       def authenticate_user!
-        render_unauthorized unless current_user
+        return render_unauthorized unless current_user
+
+        return if current_user.can_authenticate?
+
+        render_forbidden(
+          message: "Доступ запрещён. Пользователь заблокирован или деактивирован",
+          key: "auth.user_status_forbidden"
+        )
       end
     end
   end

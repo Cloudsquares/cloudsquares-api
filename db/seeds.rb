@@ -44,14 +44,14 @@ end
 
 # Находит или создаёт User, жёстко связывая его с person (1:1).
 # Гарантируем наличие профиля (даже при повторном запуске сидов).
-def ensure_user!(person:, email:, password:, role:, country_code:, is_active: true)
+def ensure_user!(person:, email:, password:, role:, country_code:, user_status: :active)
   user = User.find_or_initialize_by(person_id: person.id)
   user.email                 = email
   user.password              = password
   user.password_confirmation = password
   user.role                  = role
   user.country_code          = country_code if user.respond_to?(:country_code=)
-  user.is_active             = is_active    if user.respond_to?(:is_active=)
+  user.user_status           = user_status  if user.respond_to?(:user_status=)
   user.save!
 
   # важно: при повторном запуске after_create не сработает — гарантируем профиль руками
@@ -110,7 +110,7 @@ ActiveRecord::Base.transaction do
     {
       title: "Казахстан",
       code: "KZ",
-      phone_prefixes: ["+7"],
+      phone_prefixes: [ "+7" ],
       is_active: true,
       locale: "ru",
       timezone: "Asia/Almaty",
@@ -120,7 +120,7 @@ ActiveRecord::Base.transaction do
     {
       title: "Россия",
       code: "RU",
-      phone_prefixes: ["+7"],
+      phone_prefixes: [ "+7" ],
       is_active: true,
       locale: "ru",
       timezone: "Europe/Moscow",
@@ -130,7 +130,7 @@ ActiveRecord::Base.transaction do
     {
       title: "Беларусь",
       code: "BY",
-      phone_prefixes: ["+375"],
+      phone_prefixes: [ "+375" ],
       is_active: true,
       locale: "ru",
       timezone: "Europe/Minsk",
@@ -183,7 +183,7 @@ ActiveRecord::Base.transaction do
       password:     attrs[:password],
       role:         attrs[:role],
       country_code: attrs[:country_code],
-      is_active:    true
+      user_status:  :active
     )
     users_by_role[attrs[:role].to_sym] = { user: user, person: person, first_name: attrs[:first_name] }
   end
@@ -195,7 +195,7 @@ ActiveRecord::Base.transaction do
     admin_user.profile.update!(
       first_name: "Александр",
       last_name:  "Иванов",
-      middle_name:"Сергеевич",
+      middle_name: "Сергеевич",
       timezone:   "Europe/Moscow",
       locale:     "ru",
       # notification_prefs: admin_user.profile.notification_prefs.to_h.merge(system_emails: true, digest_daily: true),
@@ -243,4 +243,3 @@ ActiveRecord::Base.transaction do
 end
 
 say "✅ Готово! Страны, тариф, пользователи, агентство и контакты сидированы."
-
