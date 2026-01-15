@@ -1,10 +1,11 @@
 # frozen_string_literal: true
+
 module Api
   module V1
     class AgencySettingsController < BaseController
-      before_action :set_agency_setting, only: [:show, :update]
-      skip_before_action :authenticate_user!, only: [:show]
-      after_action :verify_authorized, except: [:show, :my_agency]
+      before_action :set_agency_setting, only: [ :show, :update ]
+      skip_before_action :authenticate_user!, only: [ :show ]
+      after_action :verify_authorized, except: [ :show, :my_agency ]
 
       # GET /api/v1/agency_settings/:id
       def show
@@ -43,7 +44,6 @@ module Api
           key: "agency_setting.not_found",
           message: "Настройки агентства не найдены"
         ) unless @agency_setting
-
       end
 
       def agency_setting_params

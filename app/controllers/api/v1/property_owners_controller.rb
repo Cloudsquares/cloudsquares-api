@@ -281,10 +281,10 @@ module Api
       # Используем значения enum из БД, чтобы не «хардкодить» числа.
       def role_priority_sql
         r = PropertyOwner.roles
-        order = [r["primary"], r["relative"], r["partner"], r["other"]]
+        order = [ r["primary"], r["relative"], r["partner"], r["other"] ]
         ActiveRecord::Base.send(
           :sanitize_sql_array,
-          ["array_position(ARRAY[?]::int[], property_owners.role)", order]
+          [ "array_position(ARRAY[?]::int[], property_owners.role)", order ]
         )
       end
 

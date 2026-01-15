@@ -79,7 +79,7 @@ Rails.application.configure do
 
       resource "*",
                headers: :any,
-               methods: [:get, :post, :put, :patch, :delete, :options, :head],
+               methods: [ :get, :post, :put, :patch, :delete, :options, :head ],
                credentials: true # если используешь куки или заголовки авторизации
     end
   end

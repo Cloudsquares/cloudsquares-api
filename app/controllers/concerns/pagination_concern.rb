@@ -148,4 +148,3 @@ module PaginationConcern
     end
   end
 end
-

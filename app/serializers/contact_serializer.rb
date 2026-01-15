@@ -36,13 +36,13 @@ class ContactSerializer < ActiveModel::Serializer
   def phones
     main = object.person&.normalized_phone
     extras = Array(object.extra_phones).compact
-    ([main].compact + extras).uniq
+    ([ main ].compact + extras).uniq
   end
 
   # Полное имя
   #
   # @return [String]
   def full_name
-    [object.last_name, object.first_name, object.middle_name].compact.join(" ")
+    [ object.last_name, object.first_name, object.middle_name ].compact.join(" ")
   end
 end

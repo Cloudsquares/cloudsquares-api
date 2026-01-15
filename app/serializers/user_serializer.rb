@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 class UserSerializer < ActiveModel::Serializer
-  attributes :id, :phone, :role, :country_code, :is_active,
+  attributes :id, :phone, :role, :country_code,
              :first_name, :last_name, :middle_name,
              :timezone, :locale, :avatar_url
 
+  attribute :user_status
   attribute :email, if: :show_email?
   attribute :agency, if: :has_agency_role?
-  attribute :deleted_at, if: -> { object.is_active == false }
 
   def phone
     object.person&.normalized_phone
@@ -44,6 +44,18 @@ class UserSerializer < ActiveModel::Serializer
   def timezone   = object.profile&.timezone
   def locale     = object.profile&.locale
   def avatar_url = object.profile&.avatar_url
+
+  # Структурированный статус пользователя для API.
+  #
+  # @return [Hash]
+  def user_status
+    {
+      status: object.user_status,
+      description: object.user_status_description,
+      changed_at: object.status_changed_at,
+      changed_by_id: object.status_changed_by_id
+    }
+  end
 
   def agency
     object.user_agencies.find_by(is_default: true)&.agency&.as_json(only: %i[id title slug custom_domain])

@@ -95,7 +95,7 @@ class ApplicationPolicy
 
   # Пользователь является владельцем ресурса в рамках агентства
   def owner?
-    # same_agency? && # TODO: вернуть после тестов
+      # same_agency? && # TODO: вернуть после тестов
       agent_admin?
   end
 

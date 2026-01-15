@@ -51,7 +51,7 @@ class PropertyOwner < ApplicationRecord
   #
   # @return [String]
   def full_name
-    [contact&.last_name, contact&.first_name, contact&.middle_name].compact.join(" ")
+    [ contact&.last_name, contact&.first_name, contact&.middle_name ].compact.join(" ")
   end
 
   # Мягкое удаление владельца

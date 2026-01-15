@@ -22,7 +22,7 @@ class PropertyCategory < ApplicationRecord
   # Базовые проверки
   validates :title, presence: true
   validates :slug,  presence: true, uniqueness: { scope: :agency_id, case_sensitive: false }
-  validates :level, inclusion: { in: [0, 1] }
+  validates :level, inclusion: { in: [ 0, 1 ] }
   validate  :validate_max_depth
 
   scope :active, -> { where(is_active: true) }

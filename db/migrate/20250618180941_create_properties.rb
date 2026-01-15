@@ -22,6 +22,6 @@ class CreateProperties < ActiveRecord::Migration[8.0]
     add_index :properties, :category_id
     add_index :properties, :agent_id
     add_index :properties, :is_active
-    add_index :properties, [:agency_id, :slug], unique: true, name: "index_properties_on_agency_id_and_slug"
+    add_index :properties, [ :agency_id, :slug ], unique: true, name: "index_properties_on_agency_id_and_slug"
   end
 end

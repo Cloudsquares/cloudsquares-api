@@ -52,5 +52,4 @@ module Agencies
       )
     end
   end
-
 end

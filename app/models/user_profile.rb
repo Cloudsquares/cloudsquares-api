@@ -8,7 +8,7 @@ class UserProfile < ApplicationRecord
 
   # Хелперы для ФИО — пригодятся в сериализации/вьюхах
   def full_name
-    [last_name, first_name, middle_name].compact_blank.join(" ")
+    [ last_name, first_name, middle_name ].compact_blank.join(" ")
   end
 
   def any_name_present?

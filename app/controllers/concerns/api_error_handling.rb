@@ -168,12 +168,13 @@ module ApiErrorHandling
     render_error(key: key, message: message, status: :forbidden, code: 403)
   end
 
-  # Пользователь ранее удалён (is_active: false)
+  # TODO: Для админки оставить возможность просматривать данные пользователя, даже если он был деактивирован
+  # Пользователь ранее деактивирован (user_status: deactivated)
   def render_user_deleted
     render json: {
       error: {
         key: "user.deleted",
-        message: "Пользователь удалил свой аккаунт",
+        message: "Пользователь деактивирован",
         code: 410,
         status: "gone"
       }

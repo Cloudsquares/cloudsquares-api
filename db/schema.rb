@@ -362,14 +362,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
     t.string "password_digest", null: false
     t.integer "role", default: 5, null: false
     t.string "country_code", default: "RU", null: false
-    t.boolean "is_active", default: true, null: false
+    t.string "user_status", default: "active", null: false
+    t.text "user_status_description"
+    t.datetime "status_changed_at"
+    t.uuid "status_changed_by_id"
     t.datetime "last_sign_in_at"
-    t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "person_id", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["person_id"], name: "index_users_on_person_id", unique: true
+    t.index ["status_changed_by_id"], name: "index_users_on_status_changed_by_id"
+    t.index ["user_status"], name: "index_users_on_user_status"
   end
 
   add_foreign_key "agencies", "agency_plans"
@@ -404,4 +408,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
   add_foreign_key "user_agencies", "users"
   add_foreign_key "user_profiles", "users"
   add_foreign_key "users", "people"
+  add_foreign_key "users", "users", column: "status_changed_by_id"
 end
