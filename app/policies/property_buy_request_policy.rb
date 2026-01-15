@@ -108,4 +108,3 @@ class PropertyBuyRequestPolicy < ApplicationPolicy
     Current.agency && record.agency_id == Current.agency.id
   end
 end
-

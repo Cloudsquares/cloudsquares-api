@@ -20,6 +20,6 @@ class CreatePropertyOwners < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :property_owners, [:property_id, :is_deleted]
+    add_index :property_owners, [ :property_id, :is_deleted ]
   end
 end

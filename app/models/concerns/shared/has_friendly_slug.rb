@@ -41,8 +41,8 @@ module Shared
       def has_friendly_slug(source:, scope: nil, fallback: "item")
         extend FriendlyId
 
-        opts = [:slugged]
-        scope.present? ? friendly_id(source, use: opts + [:scoped], scope: scope) :
+        opts = [ :slugged ]
+        scope.present? ? friendly_id(source, use: opts + [ :scoped ], scope: scope) :
           friendly_id(source, use: opts)
 
         define_method(:should_generate_new_friendly_id?) do

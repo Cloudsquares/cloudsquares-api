@@ -26,5 +26,5 @@ class PropertyLocation < ApplicationRecord
   # Валидации остаются строгими, но применяются только если запись вообще создаётся.
   # На этапе create Property мы НЕ создаём пустую запись адреса.
   validates :country, :region, :city, :street, :house_number, presence: true
-  validates :is_info_hidden, inclusion: { in: [true, false] }
+  validates :is_info_hidden, inclusion: { in: [ true, false ] }
 end

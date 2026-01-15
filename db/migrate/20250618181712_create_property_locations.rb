@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class CreatePropertyLocations < ActiveRecord::Migration[8.0]
   def change
     create_table :property_locations, id: :uuid do |t|

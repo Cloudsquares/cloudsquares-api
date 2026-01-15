@@ -12,6 +12,6 @@ class CreateUserAgencies < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :user_agencies, [:user_id, :agency_id], unique: true
+    add_index :user_agencies, [ :user_id, :agency_id ], unique: true
   end
 end
