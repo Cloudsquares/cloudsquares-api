@@ -41,7 +41,7 @@ module Users
       @current_user = current_user
       @user         = target_user
       @agency_id    = extract_agency_id(agency_ctx)
-      @params       = params.symbolize_keys
+      @params       = params.to_h.symbolize_keys
       @mode         = resolve_mode(mode)
       @name_target  = name_target
     end
