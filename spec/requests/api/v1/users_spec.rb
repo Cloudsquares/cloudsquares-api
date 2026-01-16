@@ -12,7 +12,7 @@ RSpec.describe "Users API", type: :request do
       operationId "getCurrentUser"
       description "Returns the authenticated user's profile with agency context."
       produces "application/json"
-      security [{ Bearer: [] }]
+      security [ { Bearer: [] } ]
 
       parameter name: :Authorization, in: :header, type: :string, required: true,
         description: "Bearer JWT access token"
@@ -60,7 +60,7 @@ RSpec.describe "Users API", type: :request do
       DESC
       consumes "application/json"
       produces "application/json"
-      security [{ Bearer: [] }]
+      security [ { Bearer: [] } ]
 
       parameter name: :Authorization, in: :header, type: :string, required: true
       parameter name: :user, in: :body, schema: {
@@ -116,7 +116,7 @@ RSpec.describe "Users API", type: :request do
         - Regular users have limited access
       DESC
       produces "application/json"
-      security [{ Bearer: [] }]
+      security [ { Bearer: [] } ]
 
       parameter name: :Authorization, in: :header, type: :string, required: true
 
@@ -160,7 +160,7 @@ RSpec.describe "Users API", type: :request do
       operationId "getUser"
       description "Retrieve a specific user's details. Authorization rules apply based on role and agency."
       produces "application/json"
-      security [{ Bearer: [] }]
+      security [ { Bearer: [] } ]
 
       parameter name: :Authorization, in: :header, type: :string, required: true
       parameter name: :id, in: :path, type: :string, format: :uuid, required: true,
@@ -229,7 +229,7 @@ RSpec.describe "Users API", type: :request do
       DESC
       consumes "application/json"
       produces "application/json"
-      security [{ Bearer: [] }]
+      security [ { Bearer: [] } ]
 
       parameter name: :Authorization, in: :header, type: :string, required: true
       parameter name: :user, in: :body, schema: {
@@ -365,7 +365,7 @@ RSpec.describe "Users API", type: :request do
       DESC
       consumes "application/json"
       produces "application/json"
-      security [{ Bearer: [] }]
+      security [ { Bearer: [] } ]
 
       parameter name: :Authorization, in: :header, type: :string, required: true
       parameter name: :id, in: :path, type: :string, format: :uuid, required: true
@@ -435,7 +435,7 @@ RSpec.describe "Users API", type: :request do
         Cannot delete an already deleted user.
       DESC
       produces "application/json"
-      security [{ Bearer: [] }]
+      security [ { Bearer: [] } ]
 
       parameter name: :Authorization, in: :header, type: :string, required: true
       parameter name: :id, in: :path, type: :string, format: :uuid, required: true

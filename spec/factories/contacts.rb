@@ -16,7 +16,7 @@ FactoryBot.define do
     end
 
     trait :with_extra_phones do
-      extra_phones { ["77001112233", "77004445566"] }
+      extra_phones { [ "77001112233", "77004445566" ] }
     end
 
     trait :with_notes do

@@ -117,7 +117,7 @@ RSpec.configure do |config|
                       type: :array,
                       items: { type: :string }
                     },
-                    example: { email: ["is invalid"], password: ["is too short"] }
+                    example: { email: [ "is invalid" ], password: [ "is too short" ] }
                   }
                 }
               }
@@ -1080,7 +1080,7 @@ RSpec.configure do |config|
           }
         }
       },
-      security: [{ Bearer: [] }],
+      security: [ { Bearer: [] } ],
       paths: {}
     }
   }

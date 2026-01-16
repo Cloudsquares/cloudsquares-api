@@ -163,7 +163,7 @@ RSpec.describe "Authentication API", type: :request do
       operationId "logout"
       description "Invalidate the user's refresh token. Requires authentication."
       produces "application/json"
-      security [{ Bearer: [] }]
+      security [ { Bearer: [] } ]
 
       parameter name: :Authorization, in: :header, type: :string, required: true,
         description: "Bearer JWT access token"
