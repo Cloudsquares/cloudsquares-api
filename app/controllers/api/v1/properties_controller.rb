@@ -17,9 +17,9 @@ module Api
 
         properties = if Current.guest?
                        base.where(status: :active)
-                     else
+        else
                        base
-                     end
+        end
 
         render json: properties,
                each_serializer: PropertySerializer,

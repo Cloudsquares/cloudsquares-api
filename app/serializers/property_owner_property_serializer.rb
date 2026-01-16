@@ -12,7 +12,7 @@ class PropertyOwnerPropertySerializer < ActiveModel::Serializer
   # URL главного фото, если выставлено is_main; иначе берём первое по position/created_at
   def main_photo_url
     photo = object.property_photos.find { |p| p.is_main } ||
-            object.property_photos.min_by { |p| [p.position || Float::INFINITY, p.created_at || Time.zone.at(0)] }
+            object.property_photos.min_by { |p| [ p.position || Float::INFINITY, p.created_at || Time.zone.at(0) ] }
     photo&.file_url
   end
 

@@ -21,7 +21,7 @@ class CreatePropertyBuyRequests < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :property_buy_requests, [:property_id, :is_deleted]
-    add_index :property_buy_requests, [:agency_id, :status]
+    add_index :property_buy_requests, [ :property_id, :is_deleted ]
+    add_index :property_buy_requests, [ :agency_id, :status ]
   end
 end

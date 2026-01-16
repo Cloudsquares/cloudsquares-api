@@ -40,7 +40,7 @@ class CustomerSerializer < ActiveModel::Serializer
   def phones
     main = object.person&.normalized_phone
     extras = Array(object.contact&.extra_phones).compact
-    ([main].compact + extras).uniq
+    ([ main ].compact + extras).uniq
   end
 
   # ФИО из Contact
@@ -50,7 +50,7 @@ class CustomerSerializer < ActiveModel::Serializer
 
   # Полное имя
   def full_name
-    [last_name, first_name, middle_name].compact.join(" ")
+    [ last_name, first_name, middle_name ].compact.join(" ")
   end
 
   # Идентификаторы

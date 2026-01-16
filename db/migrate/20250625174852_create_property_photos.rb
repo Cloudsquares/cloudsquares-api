@@ -17,6 +17,6 @@ class CreatePropertyPhotos < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :property_photos, [:property_id, :is_main], unique: true, where: "is_main = true", name: "index_property_photos_on_property_id_main"
+    add_index :property_photos, [ :property_id, :is_main ], unique: true, where: "is_main = true", name: "index_property_photos_on_property_id_main"
   end
 end

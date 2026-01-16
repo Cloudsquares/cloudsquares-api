@@ -33,3 +33,5 @@
 
 # Ignore generated files.
 /swagger
+
+.DS_Store

@@ -8,6 +8,6 @@ class CreatePropertyCharacteristicOptions < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :property_characteristic_options, [:property_characteristic_id, :value], unique: true, name: 'index_characteristic_options_uniqueness'
+    add_index :property_characteristic_options, [ :property_characteristic_id, :value ], unique: true, name: 'index_characteristic_options_uniqueness'
   end
 end

@@ -16,6 +16,6 @@ class CreatePropertyComments < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :property_comments, [:property_id, :is_deleted]
+    add_index :property_comments, [ :property_id, :is_deleted ]
   end
 end

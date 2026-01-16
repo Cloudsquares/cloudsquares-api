@@ -54,9 +54,9 @@ class Customer < ApplicationRecord
   scope :with_phone, lambda { |phone|
     normalized = if defined?(Shared::PhoneNormalizer)
                    Shared::PhoneNormalizer.normalize(phone)
-                 else
+    else
                    phone.to_s.gsub(/\D/, "")
-                 end
+    end
     joins(contact: :person).where(people: { normalized_phone: normalized })
   }
 
@@ -64,6 +64,6 @@ class Customer < ApplicationRecord
   #
   # @return [String]
   def full_name
-    [contact&.last_name, contact&.first_name, contact&.middle_name].compact.join(" ")
+    [ contact&.last_name, contact&.first_name, contact&.middle_name ].compact.join(" ")
   end
 end

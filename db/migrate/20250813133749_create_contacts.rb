@@ -24,7 +24,7 @@ class CreateContacts < ActiveRecord::Migration[8.0]
     add_foreign_key :contacts, :people
     add_index :contacts, :agency_id
     add_index :contacts, :person_id
-    add_index :contacts, [:agency_id, :person_id], unique: true, name: "index_contacts_on_agency_and_person"
+    add_index :contacts, [ :agency_id, :person_id ], unique: true, name: "index_contacts_on_agency_and_person"
     # при желании — защита от дублей email в рамках агентства:
     # add_index :contacts, "lower(email)", where: "email IS NOT NULL", unique: true, name: "index_contacts_on_agency_and_lower_email"
   end

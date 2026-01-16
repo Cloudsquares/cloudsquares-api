@@ -54,7 +54,7 @@ module Api
 
       # GET /api/v1/users/:id
       def show
-        return render_user_deleted unless @user.is_active
+        return render_user_deleted if @user.deactivated?
 
         authorize @user
         render json: @user,
@@ -142,7 +142,7 @@ module Api
             password_confirmation: attrs[:password_confirmation],
             role: attrs[:role],
             country_code: attrs[:country_code],
-            is_active: true
+            user_status: :active
           )
 
           authorize @user
@@ -189,6 +189,13 @@ module Api
         authorize @user
 
         attrs = user_params
+
+        if status_update_requested?(attrs) && !status_update_allowed?
+          return render_forbidden(
+            message: "Недостаточно прав для изменения статуса пользователя",
+            key: "users.status_forbidden"
+          )
+        end
 
         ActiveRecord::Base.transaction do
           # Если прилетел телефон — правим его в Person
@@ -260,7 +267,7 @@ module Api
 
       # DELETE /api/v1/users/:id
       def destroy
-        unless @user.is_active
+        if @user.deactivated?
           return render_error(
             key: "user.delete_deleted_user",
             message: "Пользователь уже был удалён ранее",
@@ -271,15 +278,19 @@ module Api
 
         authorize @user
 
-        if @user.update(is_active: false, deleted_at: Time.zone.now)
-          render_success(
-            key: "users.deleted",
-            message: "Пользователь успешно удалён (деактивирован)",
-            code: 200
-          )
-        else
-          render_validation_errors(@user)
-        end
+        @user.update_status!(
+          status: :deactivated,
+          description: "Пользователь деактивирован",
+          changed_by: current_user
+        )
+
+        render_success(
+          key: "users.deleted",
+          message: "Пользователь успешно удалён (деактивирован)",
+          code: 200
+        )
+      rescue ActiveRecord::RecordInvalid => e
+        render_validation_errors(e.record)
       end
 
       private
@@ -291,6 +302,21 @@ module Api
           key: "user.not_found",
           message: "Пользователь не найден"
         )
+      end
+
+      # Проверяет, запросили ли смену статуса пользователя.
+      #
+      # @param attrs [ActionController::Parameters]
+      # @return [Boolean]
+      def status_update_requested?(attrs)
+        attrs.key?(:user_status) || attrs.key?(:user_status_description)
+      end
+
+      # Проверяет, может ли текущий пользователь менять статус.
+      #
+      # @return [Boolean]
+      def status_update_allowed?
+        current_user&.admin? || current_user&.admin_manager?
       end
 
       # Личные данные для /me
@@ -313,6 +339,8 @@ module Api
           :password, :password_confirmation,
           :first_name, :last_name, :middle_name, # -> Contact текущего агентства
           :role,
+          :user_status,
+          :user_status_description,
           :country_code, # оставляем, если где-то используется
           :timezone, :locale, :avatar_url,
           notification_prefs: {},

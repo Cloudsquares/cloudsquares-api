@@ -9,7 +9,7 @@ module Api
     # - upsert Person/Contact/Customer в контексте агентства объекта;
     # - в заявку пишем :contact и :customer (а не «сырые» first_name/phone).
     class PropertyBuyRequestsController < BaseController
-      before_action :authenticate_user!, except: [:create]
+      before_action :authenticate_user!, except: [ :create ]
       before_action :set_request, only: %i[show destroy update]
       after_action :verify_authorized
 
@@ -28,9 +28,9 @@ module Api
 
         requests = if Current.user&.role == "user"
                      base_scope.where(user_id: Current.user.id)
-                   else
+        else
                      base_scope
-                   end
+        end
 
         requests = requests.where(property_id: params[:property_id]) if params[:property_id].present?
         requests = requests.includes(:property, :user, contact: :person).order(created_at: :desc)

@@ -15,7 +15,7 @@ module Api
     #   Person -> User(:agent_admin) -> Agency(plan) -> UserAgency(is_default) -> Contact.
     class AuthController < BaseController
       skip_before_action :authenticate_user!
-      before_action :authenticate_user!, only: [:logout]
+      before_action :authenticate_user!, only: [ :logout ]
 
       # POST /api/v1/auth/login
       #
@@ -54,6 +54,13 @@ module Api
           )
         end
 
+        unless user.can_authenticate?
+          return render_forbidden(
+            message: "Доступ запрещён. Пользователь заблокирован или деактивирован",
+            key: "auth.user_status_forbidden"
+          )
+        end
+
         # Определяем агентский контекст для токена
         token_agency_id = nil
         if property_id
@@ -84,6 +91,14 @@ module Api
           user = User.find_by(id: payload["sub"])
 
           if user && Auth::TokenStorageRedis.valid?(user_id: user.id, iat: payload["iat"])
+            unless user.can_authenticate?
+              Auth::TokenStorageRedis.clear(user_id: user.id)
+              return render_forbidden(
+                message: "Доступ запрещён. Пользователь заблокирован или деактивирован",
+                key: "auth.user_status_forbidden"
+              )
+            end
+
             token_agency_id = params[:agency_id].presence
             tokens = Auth::JwtService.generate_tokens(user, agency_id: token_agency_id)
             Auth::TokenStorageRedis.save(user_id: user.id, iat: tokens[:iat])
@@ -176,7 +191,7 @@ module Api
             password_confirmation: rp[:password_confirmation],
             role:                  :user,
             country_code:          rp[:country_code],
-            is_active:             true
+            user_status:           :active
           )
           user.save!
 
@@ -345,7 +360,7 @@ module Api
             password_confirmation: rp[:password_confirmation],
             role:                  :agent_admin,
             country_code:          rp[:country_code],
-            is_active:             true
+            user_status:           :active
           )
           user.save!
 

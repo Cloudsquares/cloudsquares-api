@@ -12,7 +12,7 @@ class CreatePropertyCategories < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :property_categories, [:agency_id, :slug], unique: true
+    add_index :property_categories, [ :agency_id, :slug ], unique: true
     add_index :property_categories, :parent_id
     add_foreign_key :property_categories, :property_categories, column: :parent_id
   end

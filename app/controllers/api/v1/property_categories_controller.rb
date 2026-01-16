@@ -6,7 +6,7 @@ module Api
       before_action :authenticate_user!, only: %i[create update destroy]
       before_action :set_property_category, only: %i[update destroy]
       before_action :set_agency, only: %i[index show]
-      after_action :verify_authorized, except: [:index, :show]
+      after_action :verify_authorized, except: [ :index, :show ]
 
       # GET /api/v1/property_categories
       def index
