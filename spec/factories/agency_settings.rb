@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :agency_setting do
-    association :agency
+    association :agency, create_agency_setting: false
     site_title { "Test Agency Site" }
     site_description { "Agency description" }
     home_page_content { "" }

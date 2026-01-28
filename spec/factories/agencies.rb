@@ -8,6 +8,10 @@ FactoryBot.define do
     association :agency_plan
     association :created_by, factory: :user
 
+    transient do
+      create_agency_setting { true }
+    end
+
     trait :blocked do
       is_blocked { true }
       blocked_at { Time.current }
@@ -22,8 +26,9 @@ FactoryBot.define do
       sequence(:custom_domain) { |n| "agency#{n}.example.com" }
     end
 
-    after(:create) do |agency|
-      # Ensure agency setting is created
+    after(:create) do |agency, evaluator|
+      next unless evaluator.create_agency_setting
+
       agency.agency_setting || create(:agency_setting, agency: agency)
     end
   end
