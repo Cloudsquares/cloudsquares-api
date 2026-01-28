@@ -317,3 +317,34 @@ rails-c-prod:
 
 sidekiq:
 	docker compose up sidekiq
+
+# ========================
+# 📖 SWAGGER / API DOCS
+# ========================
+
+## 📝 Generate Swagger/OpenAPI documentation from rswag specs
+swagger-generate:
+	docker compose --env-file $(ENV_FILE_DEV) exec web bundle exec rake rswag:specs:swaggerize
+
+## 📝 Generate Swagger documentation (test environment)
+swagger-generate-test:
+	make test-build
+	docker compose --env-file $(ENV_FILE_TEST) run --rm web-test bundle exec rake rswag:specs:swaggerize
+
+## 🧪 Run only swagger-tagged request specs
+swagger-specs:
+	make test-build
+	docker compose --env-file $(ENV_FILE_TEST) run --rm web-test bundle exec rspec spec/requests --format documentation
+
+## 🔍 Validate generated swagger spec (requires swagger-cli: npm install -g @apidevtools/swagger-cli)
+swagger-validate:
+	@if [ -f "swagger/v1/swagger.yaml" ]; then \
+		npx @apidevtools/swagger-cli validate swagger/v1/swagger.yaml; \
+	else \
+		echo "❌ swagger/v1/swagger.yaml not found. Run 'make swagger-generate' first."; \
+	fi
+
+## 🌐 Open Swagger UI in browser (dev server must be running)
+swagger-ui:
+	@echo "Opening Swagger UI at http://localhost:3001/api-docs"
+	@xdg-open http://localhost:3001/api-docs 2>/dev/null || open http://localhost:3001/api-docs 2>/dev/null || echo "Visit: http://localhost:3001/api-docs"
