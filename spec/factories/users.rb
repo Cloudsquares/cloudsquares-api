@@ -6,7 +6,7 @@ FactoryBot.define do
     password_confirmation { "SecurePassword1!" }
     country_code { "RU" }
     role { :user }
-    is_active { true }
+    user_status { :active }
 
     trait :admin do
       role { :admin }
@@ -29,7 +29,7 @@ FactoryBot.define do
     end
 
     trait :inactive do
-      is_active { false }
+      user_status { :deactivated }
     end
 
     trait :with_agency do

@@ -20,7 +20,7 @@ module SwaggerTestHelpers
       password: "SecurePassword1!",
       password_confirmation: "SecurePassword1!",
       country_code: "RU",
-      is_active: true
+      user_status: :active
     )
 
     if with_agency
@@ -48,7 +48,7 @@ module SwaggerTestHelpers
       password: "SecurePassword1!",
       password_confirmation: "SecurePassword1!",
       country_code: "RU",
-      is_active: true
+      user_status: :active
     )
 
     if agency

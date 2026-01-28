@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe UsersPolicy, type: :policy do
+RSpec.describe UserPolicy, type: :policy do
   let(:user) { User.new }
 
   subject { described_class }

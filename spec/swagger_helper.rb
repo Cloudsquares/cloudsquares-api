@@ -240,7 +240,16 @@ RSpec.configure do |config|
               email: { "$ref": "#/components/schemas/Email" },
               role: { "$ref": "#/components/schemas/UserRole" },
               country_code: { "$ref": "#/components/schemas/CountryCode" },
-              is_active: { type: :boolean },
+              user_status: {
+                type: :object,
+                properties: {
+                  status: { type: :string },
+                  description: { type: :string, nullable: true },
+                  changed_at: { "$ref": "#/components/schemas/Timestamp" },
+                  changed_by_id: { "$ref": "#/components/schemas/UUID", nullable: true }
+                },
+                required: %w[status changed_at]
+              },
               first_name: { type: :string, nullable: true },
               last_name: { type: :string, nullable: true },
               middle_name: { type: :string, nullable: true },
@@ -256,7 +265,7 @@ RSpec.configure do |config|
               },
               deleted_at: { "$ref": "#/components/schemas/Timestamp" }
             },
-            required: %w[id phone role country_code is_active]
+            required: %w[id phone role country_code user_status]
           },
 
           UserCreateRequest: {
