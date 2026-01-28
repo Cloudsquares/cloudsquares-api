@@ -429,7 +429,7 @@ RSpec.describe "Users API", type: :request do
       tags "Users"
       operationId "deleteUser"
       description <<~DESC
-        Soft delete a user by setting `is_active` to false.
+        Soft delete a user by setting `user_status` to deactivated.
 
         The user record is preserved but marked as deleted.
         Cannot delete an already deleted user.
@@ -456,7 +456,7 @@ RSpec.describe "Users API", type: :request do
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data.dig("success", "key")).to eq("users.deleted")
-          expect(target_user.reload.is_active).to be false
+          expect(target_user.reload).to be_deactivated
         end
       end
 
