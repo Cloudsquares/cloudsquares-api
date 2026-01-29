@@ -6,6 +6,10 @@ module Api
       after_action :verify_authorized
 
       # TODO: Определять недвижимость агентства по имени хосту в продакшене! Сейчас временно передаем айди черзе параметры
+      #
+      # Параметры пагинации:
+      # - page: Integer (default 1)
+      # - per_page: Integer (default 20, max 100)
       def index
         authorize Property
 
@@ -21,9 +25,11 @@ module Api
                        base
         end
 
-        render json: properties,
-               each_serializer: PropertySerializer,
-               current_agency: agency
+        render_paginated(
+          properties,
+          serializer: PropertySerializer,
+          order: { created_at: :desc }
+        )
       end
 
 
