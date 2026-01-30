@@ -15,6 +15,7 @@ module ApiErrorHandling
     rescue_from JWT::DecodeError, with: :render_invalid_token
     rescue_from JWT::ExpiredSignature, with: :render_expired_token
     rescue_from ActiveRecord::RecordNotUnique, with: :render_record_not_unique
+    rescue_from Search::QueryTooLongError, with: :render_search_query_too_long
 
     # Важно: перехватываем валидации, упавшие на уровне ассоциаций/колбэков,
     # чтобы вернуть корректный JSON с подробностями.
@@ -66,6 +67,19 @@ module ApiErrorHandling
       message: message || "Дубликат значения нарушает уникальность",
       status: :unprocessable_entity,
       code: 422
+    )
+  end
+
+  # Ошибка слишком длинного поискового запроса
+  #
+  # @param exception [Search::QueryTooLongError]
+  # @return [void]
+  def render_search_query_too_long(exception)
+    render_error(
+      key: "search.query_too_long",
+      message: "Слишком длинный поисковый запрос (макс: #{exception.max_length})",
+      status: :bad_request,
+      code: 400
     )
   end
 

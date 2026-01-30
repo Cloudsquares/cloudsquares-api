@@ -13,8 +13,10 @@ module Api
       def index
         authorize Property
 
-        agency = Agency.find_by(id: temp_params[:agency_id]) # все объекты в одном агентстве
-        base = Property
+        agency = Current.agency || Agency.find_by(id: temp_params[:agency_id])
+        base_scope = Current.guest? ? Property : policy_scope(Property)
+
+        base = base_scope
                  .available
                  .where(agency_id: agency&.id)
                  .includes(:property_location, agent: :person)
@@ -24,6 +26,13 @@ module Api
         else
                        base
         end
+
+        properties = Search::QueryService.call(
+          entity: :properties,
+          scope: properties,
+          query: params[:q],
+          context: search_context
+        )
 
         render_paginated(
           properties,
