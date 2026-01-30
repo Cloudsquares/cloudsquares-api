@@ -39,6 +39,13 @@ module Api
                   .where(properties: { agency_id: Current.agency.id, id: @property.id })
                   .includes(:property, contact: :person)
 
+        scope = Search::QueryService.call(
+          entity: :property_owners,
+          scope: scope,
+          query: params[:q],
+          context: search_context
+        )
+
         if params[:sort_by].present?
           order = safe_sort(
             allowed: {

@@ -10,7 +10,20 @@ module Api
 
       # GET /api/v1/property_categories
       def index
-        categories = @agency.property_categories.active.order(:position)
+        categories = policy_scope(PropertyCategory)
+                     .where(agency_id: @agency.id)
+                     .active
+                     .order(:position)
+
+        # TODO: добавить пагинацию и убрать ограничение SEARCH_MAX_RESULTS.
+        categories = Search::QueryService.call(
+          entity: :property_categories,
+          scope: categories,
+          query: params[:q],
+          context: search_context,
+          limit: SearchConfig.max_results
+        )
+
         render json: categories, each_serializer: PropertyCategorySerializer
       end
 
@@ -69,7 +82,7 @@ module Api
 
       def set_agency
         # TODO: в будущем убрать agency_id и искать агентство по host
-        @agency = Agency.find_by!(id: public_params[:agency_id])
+        @agency = Current.agency || Agency.find_by!(id: public_params[:agency_id])
       rescue ActiveRecord::RecordNotFound
         render_not_found(
           key: "agency.not_found",

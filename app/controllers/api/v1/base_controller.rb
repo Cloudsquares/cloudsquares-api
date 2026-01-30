@@ -72,6 +72,13 @@ module Api
         @current_agency
       end
 
+      # Контекст поиска для передачи в сервисы Search.
+      #
+      # @return [Search::Context]
+      def search_context
+        Search::Context.new(agency: Current.agency, user: Current.user)
+      end
+
       def bearer_token
         request.headers["Authorization"]&.split&.last
       end

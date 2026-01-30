@@ -11,6 +11,16 @@ module Api
       def index
         characteristics = Current.agency.property_characteristics.active.order(:position)
         authorize characteristics
+
+        # TODO: добавить пагинацию и убрать ограничение SEARCH_MAX_RESULTS.
+        characteristics = Search::QueryService.call(
+          entity: :property_characteristics,
+          scope: characteristics,
+          query: params[:q],
+          context: search_context,
+          limit: SearchConfig.max_results
+        )
+
         render json: characteristics, each_serializer: PropertyCharacteristicSerializer
       end
 

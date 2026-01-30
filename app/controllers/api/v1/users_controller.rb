@@ -46,6 +46,16 @@ module Api
       # GET /api/v1/users
       def index
         users = policy_scope(User)
+
+        # TODO: добавить пагинацию и убрать ограничение SEARCH_MAX_RESULTS.
+        users = Search::QueryService.call(
+          entity: :users,
+          scope: users,
+          query: params[:q],
+          context: search_context,
+          limit: SearchConfig.max_results
+        )
+
         render json: users,
                each_serializer: UserSerializer,
                current_agency: Current.agency,

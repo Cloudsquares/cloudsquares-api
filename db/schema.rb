@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_30_121000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pg_trgm"
 
   create_table "agencies", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "title", null: false
@@ -80,8 +81,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
     t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "((((((COALESCE(last_name, ''::character varying))::text || ' '::text) || (COALESCE(first_name, ''::character varying))::text) || ' '::text) || (COALESCE(middle_name, ''::character varying))::text)) gin_trgm_ops", name: "index_contacts_on_full_name_trgm", using: :gin
     t.index ["agency_id", "person_id"], name: "index_contacts_on_agency_and_person", unique: true
     t.index ["agency_id"], name: "index_contacts_on_agency_id"
+    t.index ["email"], name: "index_contacts_on_email_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["person_id"], name: "index_contacts_on_person_id"
   end
 
@@ -157,6 +160,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["normalized_phone"], name: "index_people_on_normalized_phone", unique: true
+    t.index ["normalized_phone"], name: "index_people_on_normalized_phone_trgm", opclass: :gin_trgm_ops, using: :gin
   end
 
   create_table "properties", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -179,6 +183,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
     t.index ["agent_id"], name: "index_properties_on_agent_id"
     t.index ["category_id"], name: "index_properties_on_category_id"
     t.index ["is_active"], name: "index_properties_on_is_active"
+    t.index ["title"], name: "index_properties_on_title_trgm", opclass: :gin_trgm_ops, using: :gin
   end
 
   create_table "property_buy_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -213,9 +218,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
     t.integer "level", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "((id)::text) gin_trgm_ops", name: "index_property_categories_on_id_trgm", using: :gin
     t.index ["agency_id", "slug"], name: "index_property_categories_on_agency_id_and_slug", unique: true
     t.index ["agency_id"], name: "index_property_categories_on_agency_id"
     t.index ["parent_id"], name: "index_property_categories_on_parent_id"
+    t.index ["title"], name: "index_property_categories_on_title_trgm", opclass: :gin_trgm_ops, using: :gin
   end
 
   create_table "property_category_characteristics", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -260,8 +267,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_private", default: false, null: false
+    t.index "((id)::text) gin_trgm_ops", name: "index_property_characteristics_on_id_trgm", using: :gin
     t.index ["agency_id", "title"], name: "index_property_characteristics_on_agency_id_and_title", unique: true
     t.index ["agency_id"], name: "index_property_characteristics_on_agency_id"
+    t.index ["title"], name: "index_property_characteristics_on_title_trgm", opclass: :gin_trgm_ops, using: :gin
   end
 
   create_table "property_comments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -295,6 +304,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
     t.uuid "geo_city_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "((((((((((COALESCE(country, ''::character varying))::text || ' '::text) || (COALESCE(region, ''::character varying))::text) || ' '::text) || (COALESCE(city, ''::character varying))::text) || ' '::text) || (COALESCE(street, ''::character varying))::text) || ' '::text) || (COALESCE(house_number, ''::character varying))::text)) gin_trgm_ops", name: "index_property_locations_on_search_address_trgm", using: :gin
     t.index ["property_id"], name: "index_property_locations_on_property_id"
   end
 
@@ -371,6 +381,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_132440) do
     t.datetime "updated_at", null: false
     t.uuid "person_id", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["email"], name: "index_users_on_email_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["person_id"], name: "index_users_on_person_id", unique: true
     t.index ["status_changed_by_id"], name: "index_users_on_status_changed_by_id"
     t.index ["user_status"], name: "index_users_on_user_status"

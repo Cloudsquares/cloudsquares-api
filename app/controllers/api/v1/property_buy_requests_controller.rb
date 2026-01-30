@@ -22,17 +22,18 @@ module Api
       def index
         authorize PropertyBuyRequest
 
-        base_scope = PropertyBuyRequest
-                       .active
-                       .where(agency_id: Current.agency.id)
+        base_scope = policy_scope(PropertyBuyRequest).active
+        base_scope = base_scope.where(property_id: params[:property_id]) if params[:property_id].present?
 
-        requests = if Current.user&.role == "user"
-                     base_scope.where(user_id: Current.user.id)
-        else
-                     base_scope
-        end
+        # TODO: добавить пагинацию и убрать ограничение SEARCH_MAX_RESULTS.
+        requests = Search::QueryService.call(
+          entity: :property_buy_requests,
+          scope: base_scope,
+          query: params[:q],
+          context: search_context,
+          limit: SearchConfig.max_results
+        )
 
-        requests = requests.where(property_id: params[:property_id]) if params[:property_id].present?
         requests = requests.includes(:property, :user, contact: :person).order(created_at: :desc)
 
         render json: requests, each_serializer: PropertyBuyRequestSerializer

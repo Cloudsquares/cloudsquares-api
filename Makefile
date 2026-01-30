@@ -9,6 +9,8 @@ ENV_FILE_PROD=.env.production
 # 👨‍💻 TEST
 # ========================
 
+.PHONY: test-build test test-file test-db-create test-db-migrate test-db-prepare
+
 test-build:
 	docker compose --env-file $(ENV_FILE_TEST) build web-test
 
