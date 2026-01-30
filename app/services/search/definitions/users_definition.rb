@@ -30,9 +30,9 @@ module Search
 
         predicates = [
           build_predicate(provider, users[:email], query),
-          build_predicate(provider, people[:normalized_phone], query),
+          build_phone_predicate(provider, people[:normalized_phone], query),
           build_predicate(provider, profile_name_expr, query)
-        ]
+        ].compact
 
         if agency_guard
           predicates << agency_guard.and(build_predicate(provider, name_expr, query))

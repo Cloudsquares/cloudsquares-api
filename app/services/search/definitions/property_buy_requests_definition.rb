@@ -22,8 +22,8 @@ module Search
 
         [
           build_predicate(provider, name_expr, query),
-          build_predicate(provider, people[:normalized_phone], query)
-        ]
+          build_phone_predicate(provider, people[:normalized_phone], query)
+        ].compact
       end
 
       private

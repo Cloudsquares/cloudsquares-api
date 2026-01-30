@@ -55,6 +55,27 @@ module Search
         provider.build_text_predicate(expression, query)
       end
 
+      # Строит ILIKE-предикат для телефона с нормализацией.
+      #
+      # @param provider [Search::Provider]
+      # @param expression [Arel::Nodes::Node]
+      # @param query [String]
+      # @return [Arel::Nodes::Node, nil]
+      def build_phone_predicate(provider, expression, query)
+        normalized = normalize_phone_query(query)
+        return nil if normalized.blank?
+
+        provider.build_text_predicate(expression, normalized)
+      end
+
+      # Нормализует телефонный запрос.
+      #
+      # @param query [String]
+      # @return [String, nil]
+      def normalize_phone_query(query)
+        ::Shared::PhoneNormalizer.normalize(query)
+      end
+
       # Создаёт выражение для склейки текстовых полей через "||".
       # Используется для совпадения с индексами на выражениях (IMMUTABLE).
       #
